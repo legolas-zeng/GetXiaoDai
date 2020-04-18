@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <title>小贷文件上传</title>
+    <link href="/static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/font-awesome.css?v=4.4.0" rel="stylesheet">
+    <link href="/static/css/plugins/dropzone/basic.css" rel="stylesheet">
+    <link href="/static/css/plugins/dropzone/dropzone.css" rel="stylesheet">
+    <link href="/static/css/style.css?v=4.1.0" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeIn">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>当前用户名：{{.username}} <button class="btn btn-xs btn-danger"><a href="/logout">退出</a></button></h5>
+                </div>
+                <div class="ibox-content">
+                    <form id="my-awesome-dropzone" class="dropzone" action="/uploadfile">
+                        <div class="dropzone-previews"></div>
+                        <button type="submit" class="btn btn-primary pull-right">提交</button>
+                    </form>
+                    <div>
+                        <div class="m">请先下载模板，填好后拖拽上传，服务采用beego异步框架，能快速提取小贷数据，是一个非常不错的选择，值得一试！</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+        </div>
+        <div class="col-sm-2" id="MyDiv">
+        </div>
+        <div class="col-sm-2">
+            <button  onclick="download()" class="btn btn-block btn-outline btn-success pull-right">下载模板</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- 全局js -->
+<script src="/static/js/jquery.min.js?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/static/js/plugins/dropzone/dropzone.js"></script>
+
+
+<script>
+    $(document).ready(function () {
+        var fileList_Uploading = new Array();
+
+        Dropzone.options.myAwesomeDropzone = {
+            url: "/uploadfile", // 文件提交地址
+            method: "post",  // 也可用put
+            autoProcessQueue:false,//自动上传
+            paramName: "myfile", // 默认为file
+            maxFiles: 1,// 一次性上传的文件数量上限
+            maxFilesize: 20, // 文件大小，单位：MB
+            dictFileTooBig: '文件超出最大20M约束',
+            acceptedFiles: ".xlsx", // 上传的类型
+            addRemoveLinks: true,
+            parallelUploads: 1,// 一次上传的文件数量
+            //previewsContainer:"#preview", // 上传图片的预览窗口
+            dictDefaultMessage: '拖动文件至此或者点击上传',
+            dictMaxFilesExceeded: "您最多只能上传1个文件！",
+            dictResponseError: '文件上传失败!',
+            dictInvalidFileType: "文件类型只能是*.jpg,*.gif,*.png,*.jpeg,.txt,.doc,.docx。",
+            dictFallbackMessage: "浏览器不受支持",
+            dictRemoveLinks: "删除",
+            dictCancelUpload: "取消",
+
+            // Dropzone settings
+            init: function () {
+                var myDropzone = this;
+                fileList = this.getAcceptedFiles();//所有接受的文件（合法）
+                this.element.querySelector("button[type=submit]").addEventListener("click", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    myDropzone.processQueue();
+                });
+                this.on("sendingmultiple", function () {});
+                this.on("successmultiple", function (files, response) {});
+                this.on("errormultiple", function (files, response) {});
+                this.on("success", function(file,response) {
+                    console.log(file.name)
+                    console.log(response)
+                    var url = '/continue'
+                    var jointrul = url.concat('/',response)
+                    console.log(jointrul)
+                //TODO 这里构建“下一步”
+                    $("#MyDiv").html('<button class=\"btn btn-warning pull-right\"><a href='+jointrul+'>下一步</a></button>')
+                })
+            }
+
+        }
+
+    });
+</script>
+
+<script>
+    function download(){
+        window.location.href="/download";
+    }
+</script>
+
+</body>
+
+</html>

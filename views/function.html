@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>小贷文件上传</title>
+    <link href="/static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/font-awesome.css?v=4.4.0" rel="stylesheet">
+    <link href="/static/css/style.css?v=4.1.0" rel="stylesheet">
+    <link href="/static/css/sweetalert.css" rel="stylesheet">
+    <style>
+        .textarea-inherit {
+            width: 100%;
+            height: 500px;
+            overflow: auto;
+            word-break: break-all; //解决兼容问题
+        }
+    </style>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeIn">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+
+                <div class="ibox-content">
+                    <textarea id="log_tankuang" rows="2" class="textarea-inherit" readonly="readonly">[root@logs~]#</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+        </div>
+        <div class="col-sm-2">
+            <button class="btn btn-danger " type="button"><i class="fa fa-upload"></i>&nbsp;&nbsp;<span class="bold"><a href="/">返回上一步</a></span></button>
+        </div>
+        <div class="col-sm-2" id="MyDiv">
+            <button id="tiqu" class="btn btn-block btn-warning" disabled><div id="size">下载提取数据</div></button>
+        </div>
+        <div class="col-sm-2" id="norun">
+            <button  id="run" class="btn btn-block btn-success">开始提取</button>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="/static/js/jquery.min.js?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/static/js/sweetalert.min.js"></script>
+
+<script>
+    $(function () {
+        $("#run").click(function() {
+            $(this).attr({"disabled":"disabled"});
+            console.log("启动websocket")
+            var socket = new WebSocket('ws://' + window.location.host + '/ws');
+            socket.onopen = function () {
+                log('远程服务已连接');
+            };
+            socket.onmessage = function (msg) {
+                log(msg.data);
+                var obje = document.getElementById("log_tankuang");   //日志过多时清屏
+                var textlength = obje.scrollHeight;
+                if (textlength > 10000) {
+                    obje.innerHTML = '';
+                }
+            };
+            socket.onclose = function () {
+                log("服务断开了");
+                $("#start").attr('disabled', false);
+                $("#stop").attr('disabled', true);
+            };
+            function log(msg) {
+                var reg = new RegExp('"',"g");
+                var str = msg.replace(reg, "");
+                str = str.replace(/\s*/g,"");
+                if (str == "complete"){
+                    console.log("完成");
+                    // $("#norun").html('<button id="tiqu" class="btn btn-block btn-outline btn-warning" >下载提取数据</button>')
+                    $('#tiqu').attr("disabled",false);
+                    $.ajax({
+                        type: "get",
+                        url: '/getfilesize/',
+                        // data: JSON.stringify(Postdata),
+                        success: function (data) {
+                            console.log(data.Val)
+                            $("#size").html('数据总计：'+data.Val)
+                        }
+                    })
+                }else {
+                    var obje = document.getElementById("log_tankuang");
+                    obje.innerHTML += str + "\n";
+                    obje.scrollTop = obje.scrollHeight;   //滚动条显示最新数据
+                }
+            }
+        })
+    });
+
+</script>
+
+<script>
+    $(function () {
+        $("#tiqu").click(function() {
+            swal("复制下面的路径,在文件夹打开","\\\\1.2.3.4\\public")
+        })
+    })
+</script>
+
+</html>
